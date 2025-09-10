@@ -15,5 +15,5 @@ CREATE TABLE event (
                         PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_event_start_at ON events (start_at);
-CREATE INDEX idx_event_visibility_start ON events (visibility, start_at);
+CREATE INDEX idx_event_start_at ON event (start_at);
+CREATE INDEX idx_event_visibility_start ON event (visibility, start_at);
