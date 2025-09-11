@@ -47,3 +47,10 @@ management:
     health:
       probes:
         enabled: true
+
+events:
+  rules:
+    min-duration-minutes: 15
+    max-duration-hours: 240 # 10 days
+    allow-overlap-same-location: true
+    allow-create-in-past: true
