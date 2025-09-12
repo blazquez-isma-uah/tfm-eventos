@@ -18,4 +18,5 @@ public interface EventService {
   List<EventResponse> listPast(Instant before);
 
   List<CalendarEventItem> calendarBetween(Instant from, Instant to, String tzOptional);
+  List<CalendarEventItem> calendarBetweenPublic(Instant from, Instant to, String tzOptional);
 }

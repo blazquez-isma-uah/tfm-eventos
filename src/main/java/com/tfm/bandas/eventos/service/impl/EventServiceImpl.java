@@ -11,6 +11,7 @@ import com.tfm.bandas.eventos.exception.NotFoundException;
 import com.tfm.bandas.eventos.model.entity.Event;
 import com.tfm.bandas.eventos.model.repository.EventRepository;
 import com.tfm.bandas.eventos.service.EventService;
+import com.tfm.bandas.eventos.utils.EventVisibility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +78,15 @@ public class EventServiceImpl implements EventService {
     ZoneId zone = (tzOptional == null || tzOptional.isBlank()) ? null : ZoneId.of(tzOptional);
     return repo.findAllByStartAtBetweenOrderByStartAtAsc(from, to)
         .stream().map(e -> EventMapper.toCalendarItem(e, zone)).toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<CalendarEventItem> calendarBetweenPublic(Instant from, Instant to, String tzOptional) {
+    ZoneId zone = (tzOptional == null || tzOptional.isBlank()) ? null : ZoneId.of(tzOptional);
+    return repo.findAllByVisibilityAndStartAtBetweenOrderByStartAtAsc(
+            EventVisibility.PUBLIC, from, to
+    ).stream().map(e -> EventMapper.toCalendarItem(e, zone)).toList();
   }
 
   private void validateBusinessRules(Event event, String excludeIdForUpdate) {

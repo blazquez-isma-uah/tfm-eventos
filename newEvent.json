@@ -1,0 +1,11 @@
+{
+  "title":"Ensayo general",
+  "description":"Sección completa",
+  "location":"Sala Principal",
+  "type":"REHEARSAL",
+  "status":"SCHEDULED",
+  "visibility":"BAND_ONLY",
+  "localStart":"2025-10-20T19:00:00",
+  "localEnd":"2025-10-20T21:00:00",
+  "timeZone":"Europe/Madrid"
+}
