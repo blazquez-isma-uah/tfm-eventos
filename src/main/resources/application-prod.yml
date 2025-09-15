@@ -1,0 +1,72 @@
+server:
+  port: 8080
+  compression:
+    enabled: true
+  forward-headers-strategy: native
+
+spring:
+  application:
+    name: events
+
+  datasource:
+    # Espera variables de entorno DB_* (ajústalas en tu orquestación)
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:tfm_events}?useSSL=${DB_USE_SSL:true}&requireSSL=${DB_REQUIRE_SSL:true}&verifyServerCertificate=${DB_VERIFY_SERVER_CERT:true}&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USER:tfm_events_rw}
+    password: ${DB_PASS:CHANGE_ME}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      idle-timeout: 60000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate        # En prod, nunca update/create
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+
+  flyway:
+    enabled: true               # Migraciones versionadas
+    locations: classpath:db/migration
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # En prod, apunta al issuer público (HTTPS) de tu Keycloak/IdP
+          issuer-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI}
+          # Alternativa si prefieres: jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI}
+
+springdoc:
+  swagger-ui:
+    enabled: false              # Por defecto OFF en prod
+  api-docs:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: INFO
+
+# Reglas de negocio parametrizables por ENV
+events:
+  rules:
+    min-duration-minutes: ${EVENTS_RULES_MIN_DURATION_MINUTES:15}
+    max-duration-hours: ${EVENTS_RULES_MAX_DURATION_HOURS:8}
+    allow-overlap-same-location: ${EVENTS_RULES_ALLOW_OVERLAP_SAME_LOCATION:false}
+    allow-create-in-past: ${EVENTS_RULES_ALLOW_CREATE_IN_PAST:false}

@@ -1,5 +1,5 @@
 KC=http://localhost:8080
-curl -s -X POST "$KC/realms/tfm-bandas/protocol/openid-connect/token" \
+curl -X POST "$KC/realms/tfm-bandas/protocol/openid-connect/token" \
   -d grant_type=password \
   -d client_id=frontend-local \
   -d username=ismablazquez \
@@ -9,7 +9,7 @@ cat /tmp/tok.txt | awk -F. '{print $2}' | base64 -d 2>/dev/null | jq
 # Debe tener "iss": "http://localhost:8080/realms/tfm-bandas"
 # y "realm_access": { "roles": ["ADMIN"] } o ["MUSICIAN"]
 
-curl -i "http://localhost:8083/api/events?from=2025-10-01T00:00:00Z&to=2025-10-31T23:59:59Z" \
+curl -i "http://localhost:8083/api/events?from=2025-09-01T00:00:00Z&to=2025-10-31T23:59:59Z" \
   -H "Authorization: Bearer $(cat /tmp/tok.txt)"
 
 

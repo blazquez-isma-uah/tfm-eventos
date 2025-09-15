@@ -5,12 +5,9 @@ spring:
   application:
     name: events
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3307}/${DB_NAME:bandas_db_event}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${DB_USER:bandas_user}
-    password: ${DB_PASS:bandas_pass}
-#    url: jdbc:mysql://localhost:3307/bandas_db_events?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-#    username: bandas_user
-#    password: bandas_pass
+    url: jdbc:mysql://localhost:3307/tfm_events?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: tfm_events_rw
+    password: tfm_events_password
   jpa:
     hibernate:
       ddl-auto: update  # Usar 'create' si quieres que borre y rehaga todo en cada arranque

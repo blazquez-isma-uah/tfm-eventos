@@ -1,11 +1,11 @@
 {
-  "title":"Ensayo general",
-  "description":"Sección completa",
-  "location":"Sala Principal",
+  "title":"Concierto de final de verano",
+  "description":"Concierto para celebrar el final del verano con todos los miembros de la banda.",
+  "location":"Auditorio Local",
   "type":"REHEARSAL",
   "status":"SCHEDULED",
-  "visibility":"BAND_ONLY",
-  "localStart":"2025-10-20T19:00:00",
-  "localEnd":"2025-10-20T21:00:00",
+  "visibility":"PUBLIC",
+  "localStart":"2025-09-20T19:00:00",
+  "localEnd":"2025-09-20T21:00:00",
   "timeZone":"Europe/Madrid"
 }

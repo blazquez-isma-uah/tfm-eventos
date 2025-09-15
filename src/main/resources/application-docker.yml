@@ -1,0 +1,52 @@
+server:
+  port: 8080 # En Docker, el puerto 8080 del contenedor se mapea al 8083 del host
+
+spring:
+  application:
+    name: events
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:tfm_events}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USER:tfm_events_rw}
+    password: ${DB_PASS:tfm_events_password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    connect-retries: 10
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # En Docker usamos JWKS explícito (no issuer-uri) para evitar problemas de hostname
+          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+events:
+  rules:
+    min-duration-minutes: ${EVENTS_RULES_MIN_DURATION_MINUTES:15}
+    max-duration-hours: ${EVENTS_RULES_MAX_DURATION_HOURS:8}
+    allow-overlap-same-location: ${EVENTS_RULES_ALLOW_OVERLAP_SAME_LOCATION:false}
+    allow-create-in-past: ${EVENTS_RULES_ALLOW_CREATE_IN_PAST:true}
