@@ -16,7 +16,7 @@ import java.time.Instant;
   @Index(name = "idx_events_start_at", columnList = "start_at"),
   @Index(name = "idx_events_visibility_start", columnList = "visibility,start_at")
 })
-public class Event {
+public class EventEntity {
 
   @Id
   @Column(length = 36, nullable = false)

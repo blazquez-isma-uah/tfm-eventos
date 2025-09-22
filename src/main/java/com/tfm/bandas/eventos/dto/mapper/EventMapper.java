@@ -1,11 +1,11 @@
 package com.tfm.bandas.eventos.dto.mapper;
 
-import com.tfm.bandas.eventos.dto.CalendarEventItem;
-import com.tfm.bandas.eventos.dto.EventCreateRequest;
-import com.tfm.bandas.eventos.dto.EventResponse;
-import com.tfm.bandas.eventos.dto.EventUpdateRequest;
+import com.tfm.bandas.eventos.dto.CalendarEventItemDTO;
+import com.tfm.bandas.eventos.dto.EventCreateRequestDTO;
+import com.tfm.bandas.eventos.dto.EventResponseDTO;
+import com.tfm.bandas.eventos.dto.EventUpdateRequestDTO;
 import com.tfm.bandas.eventos.exception.BadRequestException;
-import com.tfm.bandas.eventos.model.entity.Event;
+import com.tfm.bandas.eventos.model.entity.EventEntity;
 import com.tfm.bandas.eventos.utils.EventStatus;
 
 import java.time.*;
@@ -24,12 +24,12 @@ public class EventMapper {
     return local.atZone(zone).toInstant();
   }
 
-  public static Event toEntityNew(EventCreateRequest req) {
+  public static EventEntity toEntityNew(EventCreateRequestDTO req) {
     Instant start = toInstant(req.localStart(), req.timeZone());
     Instant end   = toInstant(req.localEnd(), req.timeZone());
     if (!end.isAfter(start)) throw new BadRequestException("end must be after start");
 
-    return Event.builder()
+    return EventEntity.builder()
         .id(UUID.randomUUID().toString())
         .title(req.title())
         .description(req.description())
@@ -43,7 +43,7 @@ public class EventMapper {
         .build();
   }
 
-  public static void copyToEntityUpdate(EventUpdateRequest req, Event e) {
+  public static void copyToEntityUpdate(EventUpdateRequestDTO req, EventEntity e) {
     Instant start = toInstant(req.localStart(), req.timeZone());
     Instant end   = toInstant(req.localEnd(), req.timeZone());
     if (!end.isAfter(start)) throw new BadRequestException("end must be after start");
@@ -59,12 +59,12 @@ public class EventMapper {
     e.setEndAt(end);
   }
 
-  public static EventResponse toResponse(Event e) {
+  public static EventResponseDTO toResponse(EventEntity e) {
     ZoneId zone = ZoneId.of(e.getTimeZone());
     String startLocal = e.getStartAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
     String endLocal   = e.getEndAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
 
-    return new EventResponse(
+    return new EventResponseDTO(
         e.getId(),
         e.getVersion(),
         e.getTitle(),
@@ -81,11 +81,11 @@ public class EventMapper {
     );
   }
 
-  public static CalendarEventItem toCalendarItem(Event e, ZoneId tzOpt) {
+  public static CalendarEventItemDTO toCalendarItem(EventEntity e, ZoneId tzOpt) {
     ZoneId zone = (tzOpt != null) ? tzOpt : ZoneId.of(e.getTimeZone());
     String start = e.getStartAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
     String end   = e.getEndAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
-    return new CalendarEventItem(
+    return new CalendarEventItemDTO(
         e.getId(), e.getTitle(), start, end, false,
         e.getType(), e.getStatus(), zone.getId(), e.getLocation()
     );

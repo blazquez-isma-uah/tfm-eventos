@@ -1,22 +1,31 @@
 package com.tfm.bandas.eventos.service;
 
-import com.tfm.bandas.eventos.dto.CalendarEventItem;
-import com.tfm.bandas.eventos.dto.EventCreateRequest;
-import com.tfm.bandas.eventos.dto.EventResponse;
-import com.tfm.bandas.eventos.dto.EventUpdateRequest;
+import com.tfm.bandas.eventos.dto.CalendarEventItemDTO;
+import com.tfm.bandas.eventos.dto.EventCreateRequestDTO;
+import com.tfm.bandas.eventos.dto.EventResponseDTO;
+import com.tfm.bandas.eventos.dto.EventUpdateRequestDTO;
+import com.tfm.bandas.eventos.utils.EventStatus;
+import com.tfm.bandas.eventos.utils.EventType;
+import com.tfm.bandas.eventos.utils.EventVisibility;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
-import java.util.List;
 
 public interface EventService {
-  EventResponse create(EventCreateRequest req);
-  EventResponse update(String id, EventUpdateRequest req);
-  void delete(String id);
-  EventResponse get(String id);
+  EventResponseDTO createEvent(EventCreateRequestDTO req);
+  EventResponseDTO updateEvent(String id, EventUpdateRequestDTO req);
+  void deleteEvent(String id);
+  EventResponseDTO getEvent(String id);
 
-  List<EventResponse> listBetween(Instant from, Instant to);
-  List<EventResponse> listPast(Instant before);
+  Page<EventResponseDTO> listEventsBetween(Instant from, Instant to, Pageable pageable);
+  Page<EventResponseDTO> listEventsPast(Instant before, Pageable pageable);
 
-  List<CalendarEventItem> calendarBetween(Instant from, Instant to, String tzOptional);
-  List<CalendarEventItem> calendarBetweenPublic(Instant from, Instant to, String tzOptional);
+  Page<CalendarEventItemDTO> calendarBetween(Instant from, Instant to, String tzOptional, Pageable pageable);
+  Page<CalendarEventItemDTO> calendarBetweenPublic(Instant from, Instant to, String tzOptional, Pageable pageable);
+
+  Page<EventResponseDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
+          EventType type, EventStatus status, EventVisibility visibility, Instant from, Instant to, boolean containedInRange,
+          Pageable pageable
+  );
 }

@@ -6,7 +6,7 @@ import com.tfm.bandas.eventos.utils.EventVisibility;
 
 import java.time.Instant;
 
-public record EventResponse(
+public record EventResponseDTO(
     String id,
     int version,
     String title,

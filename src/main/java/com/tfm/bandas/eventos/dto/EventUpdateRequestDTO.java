@@ -6,7 +6,7 @@ import com.tfm.bandas.eventos.utils.EventVisibility;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 
-public record EventUpdateRequest(
+public record EventUpdateRequestDTO(
     @NotBlank @Size(max = 200) String title,
     @Size(max = 5000) String description,
     @Size(max = 255) String location,
