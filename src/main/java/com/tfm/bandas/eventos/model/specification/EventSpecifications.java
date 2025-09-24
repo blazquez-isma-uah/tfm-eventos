@@ -59,29 +59,4 @@ public class EventSpecifications {
         if (visibility == null) return null;
         return (root, q, cb) -> cb.equal(root.get("visibility"), visibility);
     }
-
-    /** Eventos cuyo intervalo [startAt, endAt] interseca con [from, to] */
-    public static Specification<EventEntity> overlaps(Instant from, Instant to) {
-        if (from == null && to == null) return null;
-        if (from != null && to != null) {
-            return (root, q, cb) -> cb.and(
-                    cb.lessThan(root.get("startAt"), to),
-                    cb.greaterThan(root.get("endAt"), from)
-            );
-        }
-        if (from != null) {
-            return (root, q, cb) -> cb.greaterThan(root.get("endAt"), from);
-        }
-        // to != null
-        return (root, q, cb) -> cb.lessThan(root.get("startAt"), to);
-    }
-
-    /** Eventos íntegramente dentro de [from, to] (opcional si prefieres contención estricta) */
-    public static Specification<EventEntity> containedIn(Instant from, Instant to) {
-        if (from == null || to == null) return null;
-        return (root, q, cb) -> cb.and(
-                cb.greaterThanOrEqualTo(root.get("startAt"), from),
-                cb.lessThanOrEqualTo(root.get("endAt"), to)
-        );
-    }
 }

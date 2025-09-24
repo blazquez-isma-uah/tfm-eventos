@@ -3,7 +3,6 @@ package com.tfm.bandas.eventos.service;
 import com.tfm.bandas.eventos.dto.CalendarEventItemDTO;
 import com.tfm.bandas.eventos.dto.EventCreateRequestDTO;
 import com.tfm.bandas.eventos.dto.EventResponseDTO;
-import com.tfm.bandas.eventos.dto.EventUpdateRequestDTO;
 import com.tfm.bandas.eventos.utils.EventStatus;
 import com.tfm.bandas.eventos.utils.EventType;
 import com.tfm.bandas.eventos.utils.EventVisibility;
@@ -14,7 +13,7 @@ import java.time.Instant;
 
 public interface EventService {
   EventResponseDTO createEvent(EventCreateRequestDTO req);
-  EventResponseDTO updateEvent(String id, EventUpdateRequestDTO req);
+  EventResponseDTO updateEvent(String id, EventCreateRequestDTO req);
   void deleteEvent(String id);
   EventResponseDTO getEvent(String id);
 
@@ -25,7 +24,5 @@ public interface EventService {
   Page<CalendarEventItemDTO> calendarBetweenPublic(Instant from, Instant to, String tzOptional, Pageable pageable);
 
   Page<EventResponseDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
-          EventType type, EventStatus status, EventVisibility visibility, Instant from, Instant to, boolean containedInRange,
-          Pageable pageable
-  );
+          EventType type, EventStatus status, EventVisibility visibility, Pageable pageable);
 }

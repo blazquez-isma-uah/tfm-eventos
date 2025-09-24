@@ -3,7 +3,6 @@ package com.tfm.bandas.eventos.dto.mapper;
 import com.tfm.bandas.eventos.dto.CalendarEventItemDTO;
 import com.tfm.bandas.eventos.dto.EventCreateRequestDTO;
 import com.tfm.bandas.eventos.dto.EventResponseDTO;
-import com.tfm.bandas.eventos.dto.EventUpdateRequestDTO;
 import com.tfm.bandas.eventos.exception.BadRequestException;
 import com.tfm.bandas.eventos.model.entity.EventEntity;
 import com.tfm.bandas.eventos.utils.EventStatus;
@@ -43,7 +42,7 @@ public class EventMapper {
         .build();
   }
 
-  public static void copyToEntityUpdate(EventUpdateRequestDTO req, EventEntity e) {
+  public static void copyToEntityUpdate(EventCreateRequestDTO req, EventEntity e) {
     Instant start = toInstant(req.localStart(), req.timeZone());
     Instant end   = toInstant(req.localEnd(), req.timeZone());
     if (!end.isAfter(start)) throw new BadRequestException("end must be after start");

@@ -4,7 +4,6 @@ import com.tfm.bandas.eventos.config.EventRulesProperties;
 import com.tfm.bandas.eventos.dto.CalendarEventItemDTO;
 import com.tfm.bandas.eventos.dto.EventCreateRequestDTO;
 import com.tfm.bandas.eventos.dto.EventResponseDTO;
-import com.tfm.bandas.eventos.dto.EventUpdateRequestDTO;
 import com.tfm.bandas.eventos.dto.mapper.EventMapper;
 import com.tfm.bandas.eventos.exception.BadRequestException;
 import com.tfm.bandas.eventos.exception.NotFoundException;
@@ -42,7 +41,7 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public EventResponseDTO updateEvent(String id, EventUpdateRequestDTO req) {
+  public EventResponseDTO updateEvent(String id, EventCreateRequestDTO req) {
     EventEntity e = eventRepo.findById(id).orElseThrow(() -> new NotFoundException("Event not found: " + id));
     EventMapper.copyToEntityUpdate(req, e);
     validateBusinessRules(e, id);
@@ -96,8 +95,7 @@ public class EventServiceImpl implements EventService {
   @Override
   @Transactional(readOnly = true)
   public Page<EventResponseDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
-          EventType type, EventStatus status, EventVisibility visibility, Instant from, Instant to, boolean containedInRange,
-          Pageable pageable) {
+          EventType type, EventStatus status, EventVisibility visibility, Pageable pageable) {
 
     Specification<EventEntity> spec = Specification.anyOf(EventSpecifications.all())
             .and(EventSpecifications.text(qText))
@@ -108,8 +106,6 @@ public class EventServiceImpl implements EventService {
             .and(EventSpecifications.typeEquals(type))
             .and(EventSpecifications.statusEquals(status))
             .and(EventSpecifications.visibilityEquals(visibility));
-
-    spec = spec.and(containedInRange ? EventSpecifications.containedIn(from, to) : EventSpecifications.overlaps(from, to));
 
     return eventRepo.findAll(spec, pageable).map(EventMapper::toResponse);
   }

@@ -3,7 +3,6 @@ package com.tfm.bandas.eventos.controller;
 import com.tfm.bandas.eventos.dto.CalendarEventItemDTO;
 import com.tfm.bandas.eventos.dto.EventCreateRequestDTO;
 import com.tfm.bandas.eventos.dto.EventResponseDTO;
-import com.tfm.bandas.eventos.dto.EventUpdateRequestDTO;
 import com.tfm.bandas.eventos.service.EventService;
 import com.tfm.bandas.eventos.utils.EventStatus;
 import com.tfm.bandas.eventos.utils.EventType;
@@ -13,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,7 +35,7 @@ public class EventController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/{id}")
-  public EventResponseDTO update(@PathVariable String id, @Valid @RequestBody EventUpdateRequestDTO req) {
+  public EventResponseDTO update(@PathVariable String id, @Valid @RequestBody EventCreateRequestDTO req) {
     return eventService.updateEvent(id, req);
   }
 
@@ -99,15 +99,11 @@ public class EventController {
           @RequestParam(required = false) EventType type,
           @RequestParam(required = false) EventStatus status,
           @RequestParam(required = false) EventVisibility visibility,
-          // Rango temporal
-          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
-          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
-          @RequestParam(required = false, defaultValue = "false") boolean containedInRange,
           // Paginación / ordenación
-          @PageableDefault(size = 20, sort = "startAt,asc") Pageable pageable
+          @PageableDefault(size = 20, sort = "startAt", direction = Sort.Direction.ASC) Pageable pageable
   ) {
     return PaginatedResponse.from(eventService.searchEvents(
-            qText, title, description, location, timeZone, type, status, visibility, from, to, containedInRange, pageable
+            qText, title, description, location, timeZone, type, status, visibility, pageable
     ));
   }
 
