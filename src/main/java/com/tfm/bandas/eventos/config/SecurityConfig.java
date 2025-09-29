@@ -8,11 +8,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 
 @Configuration
@@ -22,14 +27,10 @@ public class SecurityConfig {
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     var conv = new JwtAuthenticationConverter();
-    conv.setJwtGrantedAuthoritiesConverter(jwt -> {
-      var out = new java.util.HashSet<GrantedAuthority>();
-      var realm = jwt.getClaimAsMap("realm_access");
-      if (realm != null && realm.get("roles") instanceof java.util.Collection<?> roles) {
-        for (Object r : roles) out.add(new SimpleGrantedAuthority("ROLE_" + r));
-      }
-      return out.stream().toList();
-    });
+    // Extraemos los roles del claim "realm_access" de Keycloak
+    // y los convertimos a GrantedAuthority con prefijo "ROLE_"
+    // para que Spring Security los reconozca como roles
+    conv.setJwtGrantedAuthoritiesConverter(SecurityConfig::extractRealmRoles);
 
     http
             .csrf(AbstractHttpConfigurer::disable)
@@ -53,6 +54,22 @@ public class SecurityConfig {
             .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(conv)));
 
     return http.build();
+  }
+
+  /**
+   * Extrae los roles del realm del token JWT de Keycloak (realm_access.roles) y los convierte
+   * en una colección de GrantedAuthority con el prefijo "ROLE_". Esto permite que Spring Security
+   * reconozca y utilice estos roles para la autorización basada en roles.
+   * @param jwt
+   * @return
+   */
+  private static Collection<GrantedAuthority> extractRealmRoles(Jwt jwt) {
+    var out = new HashSet<SimpleGrantedAuthority>();
+    var realm = jwt.getClaimAsMap("realm_access");
+    if (realm != null && realm.get("roles") instanceof List<?> roles) {
+      for (Object r : roles) out.add(new SimpleGrantedAuthority("ROLE_" + r.toString()));
+    }
+    return new HashSet<GrantedAuthority>(out);
   }
 
   @Bean
