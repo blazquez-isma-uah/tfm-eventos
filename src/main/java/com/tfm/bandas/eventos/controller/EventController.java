@@ -85,6 +85,16 @@ public class EventController {
     return PaginatedResponse.from(eventService.calendarBetween(from, to, tz, pageable));
   }
 
+  @GetMapping("/public/calendar")
+  public PaginatedResponse<CalendarEventItemDTO> publicCalendar(
+          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+          @RequestParam(required = false, name = "tz") String tz,
+          @PageableDefault(size = 10) Pageable pageable
+  ) {
+    return PaginatedResponse.from(eventService.calendarBetweenPublic(from, to, tz, pageable));
+  }
+
 
   @PreAuthorize("hasAnyRole('ADMIN','MUSICIAN')")
   @GetMapping("/search")
