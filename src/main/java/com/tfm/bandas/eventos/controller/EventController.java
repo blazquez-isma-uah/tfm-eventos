@@ -19,36 +19,50 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/events")
 public class EventController {
 
+  private static final Logger logger = LoggerFactory.getLogger(EventController.class);
   private final EventService eventService;
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public EventResponseDTO create(@Valid @RequestBody EventCreateRequestDTO req) {
-    return eventService.createEvent(req);
+    logger.info("Calling method: create, Arguments: req={}", req);
+    EventResponseDTO response = eventService.createEvent(req);
+    logger.info("Method: create, Returning: {}", response);
+    return response;
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/{id}")
   public EventResponseDTO update(@PathVariable String id, @Valid @RequestBody EventCreateRequestDTO req) {
-    return eventService.updateEvent(id, req);
+    logger.info("Calling method: update, Arguments: id={}, req={}", id, req);
+    EventResponseDTO response = eventService.updateEvent(id, req);
+    logger.info("Method: update, Returning: {}", response);
+    return response;
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/{id}")
   public void delete(@PathVariable String id) {
+    logger.info("Calling method: delete, Arguments: id={}", id);
     eventService.deleteEvent(id);
+    logger.info("Method: delete, Completed successfully");
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
   @GetMapping("/{id}")
   public EventResponseDTO get(@PathVariable String id) {
-    return eventService.getEvent(id);
+    logger.info("Calling method: get, Arguments: id={}", id);
+    EventResponseDTO response = eventService.getEvent(id);
+    logger.info("Method: get, Returning: {}", response);
+    return response;
   }
 
   // Listado por rango (UTC)
