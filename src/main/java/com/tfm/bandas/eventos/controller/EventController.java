@@ -32,81 +32,94 @@ public class EventController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
-  public EventResponseDTO create(@Valid @RequestBody EventCreateRequestDTO req) {
-    logger.info("Calling method: create, Arguments: req={}", req);
-    EventResponseDTO response = eventService.createEvent(req);
-    logger.info("Method: create, Returning: {}", response);
+  public EventResponseDTO createEvent(@Valid @RequestBody EventCreateRequestDTO event) {
+    logger.info("Calling createEvent with arguments: {}", event);
+    EventResponseDTO response = eventService.createEvent(event);
+    logger.info("createEvent returning: {}", response);
     return response;
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PutMapping("/{id}")
-  public EventResponseDTO update(@PathVariable String id, @Valid @RequestBody EventCreateRequestDTO req) {
-    logger.info("Calling method: update, Arguments: id={}, req={}", id, req);
-    EventResponseDTO response = eventService.updateEvent(id, req);
-    logger.info("Method: update, Returning: {}", response);
+  @PutMapping("/{eventId}")
+  public EventResponseDTO updateEvent(@PathVariable String eventId, @Valid @RequestBody EventCreateRequestDTO event) {
+    logger.info("Calling updateEvent with eventId={}, event={}", eventId, event);
+    EventResponseDTO response = eventService.updateEvent(eventId, event);
+    logger.info("updateEvent returning: {}", response);
     return response;
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @DeleteMapping("/{id}")
-  public void delete(@PathVariable String id) {
-    logger.info("Calling method: delete, Arguments: id={}", id);
-    eventService.deleteEvent(id);
-    logger.info("Method: delete, Completed successfully");
+  @DeleteMapping("/{eventId}")
+  public void deleteEvent(@PathVariable String eventId) {
+    logger.info("Calling deleteEvent with idEvent={}", eventId);
+    eventService.deleteEvent(eventId);
+    logger.info("deleteEvent Completed successfully");
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
-  @GetMapping("/{id}")
-  public EventResponseDTO get(@PathVariable String id) {
-    logger.info("Calling method: get, Arguments: id={}", id);
-    EventResponseDTO response = eventService.getEvent(id);
-    logger.info("Method: get, Returning: {}", response);
+  @GetMapping("/{eventId}")
+  public EventResponseDTO getEvent(@PathVariable String eventId) {
+    logger.info("Calling getEvent with idEvent={}", eventId);
+    EventResponseDTO response = eventService.getEvent(eventId);
+    logger.info("getEvent returning: {}", response);
     return response;
   }
 
   // Listado por rango (UTC)
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
   @GetMapping
-  public PaginatedResponse<EventResponseDTO> listBetween(
+  public PaginatedResponse<EventResponseDTO> listBetweenEvents(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
       @PageableDefault(size = 10) Pageable pageable
   ) {
-    return PaginatedResponse.from(eventService.listEventsBetween(from, to, pageable));
+    logger.info("Calling listBetweenEvents with from={}, to={}, pageable={}", from, to, pageable);
+    PaginatedResponse<EventResponseDTO> response = PaginatedResponse.from(eventService.listEventsBetween(from, to, pageable));
+    logger.info("listBetweenEvents returning: {}", response);
+    return response;
   }
 
   // Pasados (por endAt)
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
   @GetMapping("/past")
-  public PaginatedResponse<EventResponseDTO> listPast(
+  public PaginatedResponse<EventResponseDTO> listPastEvents(
       @RequestParam(required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
       @PageableDefault(size = 10) Pageable pageable
   ) {
-    return PaginatedResponse.from(eventService.listEventsPast(before != null ? before : Instant.now(), pageable));
+    logger.info("Calling listPastEvents with before={}, pageable={}", before, pageable);
+    PaginatedResponse<EventResponseDTO> response = PaginatedResponse.from(eventService.listEventsPast(before != null ? before : Instant.now(), pageable));
+    logger.info("listPastEvents returning: {}", response);
+    return response;
   }
 
   // Vista calendario (payload ligero)
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
   @GetMapping("/calendar")
-  public PaginatedResponse<CalendarEventItemDTO> calendar(
+  public PaginatedResponse<CalendarEventItemDTO> getPrivateCalendar(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
       @RequestParam(required = false, name = "tz") String tz,
       @PageableDefault(size = 10) Pageable pageable
   ) {
-    return PaginatedResponse.from(eventService.calendarBetween(from, to, tz, pageable));
+    logger.info("Calling getPrivateCalendar with from={}, to={}, tz={}, pageable={}", from, to, tz, pageable);
+    PaginatedResponse<CalendarEventItemDTO> response = PaginatedResponse.from(eventService.calendarBetween(from, to, tz, pageable));
+    logger.info("getPrivateCalendar returning: {}", response);
+    return response;
   }
 
+
   @GetMapping("/public/calendar")
-  public PaginatedResponse<CalendarEventItemDTO> publicCalendar(
+  public PaginatedResponse<CalendarEventItemDTO> getPublicCalendar(
           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
           @RequestParam(required = false, name = "tz") String tz,
           @PageableDefault(size = 10) Pageable pageable
   ) {
-    return PaginatedResponse.from(eventService.calendarBetweenPublic(from, to, tz, pageable));
+    logger.info("Calling getPublicCalendar with from={}, to={}, tz={}, pageable={}", from, to, tz, pageable);
+    PaginatedResponse<CalendarEventItemDTO> response = PaginatedResponse.from(eventService.calendarBetweenPublic(from, to, tz, pageable));
+    logger.info("getPublicCalendar returning: {}", response);
+    return response;
   }
 
 
@@ -132,8 +145,8 @@ public class EventController {
   }
 
   // Placeholder para partituras (hasta que exista el micro de Partituras)
-  @GetMapping("/{id}/scores")
-  public PaginatedResponse<Object> scoresPlaceholder(@PathVariable String id) {
+  @GetMapping("/{eventId}/scores")
+  public PaginatedResponse<Object> scoresPlaceholder(@PathVariable String eventId) {
     return PaginatedResponse.from(Page.empty()); // devolvemos lista vacía; luego lo integraremos
   }
 }

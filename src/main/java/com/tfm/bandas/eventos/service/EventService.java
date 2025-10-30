@@ -12,10 +12,10 @@ import org.springframework.data.domain.Pageable;
 import java.time.Instant;
 
 public interface EventService {
-  EventResponseDTO createEvent(EventCreateRequestDTO req);
-  EventResponseDTO updateEvent(String id, EventCreateRequestDTO req);
-  void deleteEvent(String id);
-  EventResponseDTO getEvent(String id);
+  EventResponseDTO createEvent(EventCreateRequestDTO event);
+  EventResponseDTO updateEvent(String eventId, EventCreateRequestDTO event);
+  void deleteEvent(String eventId);
+  EventResponseDTO getEvent(String idEvent);
 
   Page<EventResponseDTO> listEventsBetween(Instant from, Instant to, Pageable pageable);
   Page<EventResponseDTO> listEventsPast(Instant before, Pageable pageable);

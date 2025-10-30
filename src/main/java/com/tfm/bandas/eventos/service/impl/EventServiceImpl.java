@@ -34,32 +34,32 @@ public class EventServiceImpl implements EventService {
   private final EventRulesProperties rules;
 
   @Override
-  public EventResponseDTO createEvent(EventCreateRequestDTO req) {
-    EventEntity saved = EventMapper.toEntityNew(req);
+  public EventResponseDTO createEvent(EventCreateRequestDTO event) {
+    EventEntity saved = EventMapper.toEntityNew(event);
     validateBusinessRules(saved, null);
     return EventMapper.toResponse(eventRepo.save(saved));
   }
 
   @Override
-  public EventResponseDTO updateEvent(String id, EventCreateRequestDTO req) {
-    EventEntity e = eventRepo.findById(id).orElseThrow(() -> new NotFoundException("Event not found: " + id));
-    EventMapper.copyToEntityUpdate(req, e);
-    validateBusinessRules(e, id);
+  public EventResponseDTO updateEvent(String eventId, EventCreateRequestDTO event) {
+    EventEntity e = eventRepo.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
+    EventMapper.copyToEntityUpdate(event, e);
+    validateBusinessRules(e, eventId);
     return EventMapper.toResponse(eventRepo.save(e));
   }
 
   @Override
-  public void deleteEvent(String id) {
-    if (!eventRepo.existsById(id)) throw new NotFoundException("Event not found: " + id);
-    eventRepo.deleteById(id);
+  public void deleteEvent(String eventId) {
+    if (!eventRepo.existsById(eventId)) throw new NotFoundException("Event not found: " + eventId);
+    eventRepo.deleteById(eventId);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public EventResponseDTO getEvent(String id) {
-    return eventRepo.findById(id)
+  public EventResponseDTO getEvent(String idEvent) {
+    return eventRepo.findById(idEvent)
         .map(EventMapper::toResponse)
-        .orElseThrow(() -> new NotFoundException("Event not found: " + id));
+        .orElseThrow(() -> new NotFoundException("Event not found: " + idEvent));
   }
 
   @Override
