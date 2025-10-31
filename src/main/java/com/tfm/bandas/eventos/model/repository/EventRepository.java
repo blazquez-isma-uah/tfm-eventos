@@ -9,13 +9,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
-import java.util.List;
 
 public interface EventRepository extends JpaRepository<EventEntity, String>,
         JpaSpecificationExecutor<EventEntity> {
-  Page<EventEntity> findAllByStartAtBetweenOrderByStartAtAsc(Instant from, Instant to, Pageable pageable);
-  Page<EventEntity> findAllByEndAtBeforeOrderByEndAtDesc(Instant before, Pageable pageable);
-  Page<EventEntity> findAllByVisibilityAndStartAtBetweenOrderByStartAtAsc(EventVisibility visibility, Instant from, Instant to, Pageable pageable);
+  Page<EventEntity> findAllByStartAtBetween(Instant from, Instant to, Pageable pageable);
+  Page<EventEntity> findAllByEndAtBefore(Instant before, Pageable pageable);
+  Page<EventEntity> findAllByVisibilityAndStartAtBetween(EventVisibility visibility, Instant from, Instant to, Pageable pageable);
 
   @Query("""
   select count(e) from EventEntity e

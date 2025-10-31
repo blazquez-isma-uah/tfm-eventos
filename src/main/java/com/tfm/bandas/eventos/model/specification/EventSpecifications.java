@@ -40,6 +40,12 @@ public class EventSpecifications {
         return (root, q, cb) -> cb.equal(root.get("location"), location);
     }
 
+    public static Specification<EventEntity> locationContains(String location) {
+        if (location == null || location.isBlank()) return null;
+        String like = "%" + location.trim().toLowerCase() + "%";
+        return (root, q, cb) -> cb.like(cb.lower(root.get("location")), like);
+    }
+
     public static Specification<EventEntity> timeZoneEquals(String timeZone) {
         if (timeZone == null || timeZone.isBlank()) return null;
         return (root, q, cb) -> cb.equal(root.get("timeZone"), timeZone);

@@ -65,14 +65,14 @@ public class EventServiceImpl implements EventService {
   @Override
   @Transactional(readOnly = true)
   public Page<EventResponseDTO> listEventsBetween(Instant from, Instant to, Pageable pageable) {
-    return eventRepo.findAllByStartAtBetweenOrderByStartAtAsc(from, to, pageable)
+    return eventRepo.findAllByStartAtBetween(from, to, pageable)
         .map(EventMapper::toResponse);
   }
 
   @Override
   @Transactional(readOnly = true)
   public Page<EventResponseDTO> listEventsPast(Instant before, Pageable pageable) {
-    return eventRepo.findAllByEndAtBeforeOrderByEndAtDesc(before, pageable)
+    return eventRepo.findAllByEndAtBefore(before, pageable)
         .map(EventMapper::toResponse);
   }
 
@@ -80,7 +80,7 @@ public class EventServiceImpl implements EventService {
   @Transactional(readOnly = true)
   public Page<CalendarEventItemDTO> calendarBetween(Instant from, Instant to, String tzOptional, Pageable pageable) {
     ZoneId zone = (tzOptional == null || tzOptional.isBlank()) ? null : ZoneId.of(tzOptional);
-    return eventRepo.findAllByStartAtBetweenOrderByStartAtAsc(from, to, pageable)
+    return eventRepo.findAllByStartAtBetween(from, to, pageable)
         .map(e -> EventMapper.toCalendarItem(e, zone));
   }
 
@@ -88,7 +88,7 @@ public class EventServiceImpl implements EventService {
   @Transactional(readOnly = true)
   public Page<CalendarEventItemDTO> calendarBetweenPublic(Instant from, Instant to, String tzOptional, Pageable pageable) {
     ZoneId zone = (tzOptional == null || tzOptional.isBlank()) ? null : ZoneId.of(tzOptional);
-    return eventRepo.findAllByVisibilityAndStartAtBetweenOrderByStartAtAsc(EventVisibility.PUBLIC, from, to, pageable)
+    return eventRepo.findAllByVisibilityAndStartAtBetween(EventVisibility.PUBLIC, from, to, pageable)
             .map(e -> EventMapper.toCalendarItem(e, zone));
   }
 
@@ -101,7 +101,7 @@ public class EventServiceImpl implements EventService {
             .and(EventSpecifications.text(qText))
             .and(EventSpecifications.titleContains(title))
             .and(EventSpecifications.descriptionContains(description))
-            .and(EventSpecifications.locationEquals(location))
+            .and(EventSpecifications.locationContains(location))
             .and(EventSpecifications.timeZoneEquals(timeZone))
             .and(EventSpecifications.typeEquals(type))
             .and(EventSpecifications.statusEquals(status))
