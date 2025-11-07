@@ -97,15 +97,16 @@ public class EventServiceImpl implements EventService {
   public Page<EventResponseDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
           EventType type, EventStatus status, EventVisibility visibility, Pageable pageable) {
 
-    Specification<EventEntity> spec = Specification.anyOf(EventSpecifications.all())
-            .and(EventSpecifications.text(qText))
-            .and(EventSpecifications.titleContains(title))
-            .and(EventSpecifications.descriptionContains(description))
-            .and(EventSpecifications.locationContains(location))
-            .and(EventSpecifications.timeZoneEquals(timeZone))
-            .and(EventSpecifications.typeEquals(type))
-            .and(EventSpecifications.statusEquals(status))
-            .and(EventSpecifications.visibilityEquals(visibility));
+    Specification<EventEntity> spec = Specification.anyOf(
+            EventSpecifications.all(),
+            EventSpecifications.text(qText),
+            EventSpecifications.titleContains(title),
+            EventSpecifications.descriptionContains(description),
+            EventSpecifications.locationContains(location),
+            EventSpecifications.timeZoneEquals(timeZone),
+            EventSpecifications.typeEquals(type),
+            EventSpecifications.statusEquals(status),
+            EventSpecifications.visibilityEquals(visibility));
 
     return eventRepo.findAll(spec, pageable).map(EventMapper::toResponse);
   }
