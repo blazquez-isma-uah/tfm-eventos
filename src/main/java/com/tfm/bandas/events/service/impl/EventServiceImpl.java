@@ -97,7 +97,7 @@ public class EventServiceImpl implements EventService {
   public Page<EventResponseDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
           EventType type, EventStatus status, EventVisibility visibility, Pageable pageable) {
 
-    Specification<EventEntity> spec = Specification.anyOf(
+    Specification<EventEntity> spec = Specification.allOf(
             EventSpecifications.all(),
             EventSpecifications.text(qText),
             EventSpecifications.titleContains(title),
