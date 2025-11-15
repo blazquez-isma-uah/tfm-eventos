@@ -3,7 +3,7 @@ package com.tfm.bandas.events.service.impl;
 import com.tfm.bandas.events.config.EventRulesProperties;
 import com.tfm.bandas.events.dto.CalendarEventItemDTO;
 import com.tfm.bandas.events.dto.EventCreateRequestDTO;
-import com.tfm.bandas.events.dto.EventResponseDTO;
+import com.tfm.bandas.events.dto.EventDTO;
 import com.tfm.bandas.events.dto.mapper.EventMapper;
 import com.tfm.bandas.events.exception.BadRequestException;
 import com.tfm.bandas.events.exception.NotFoundException;
@@ -25,6 +25,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 
+import static com.tfm.bandas.events.utils.EtagUtils.compareVersion;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,29 +36,31 @@ public class EventServiceImpl implements EventService {
   private final EventRulesProperties rules;
 
   @Override
-  public EventResponseDTO createEvent(EventCreateRequestDTO event) {
+  public EventDTO createEvent(EventCreateRequestDTO event) {
     EventEntity saved = EventMapper.toEntityNew(event);
     validateBusinessRules(saved, null);
-    return EventMapper.toResponse(eventRepo.save(saved));
+    return EventMapper.toResponse(eventRepo.saveAndFlush(saved));
   }
 
   @Override
-  public EventResponseDTO updateEvent(String eventId, EventCreateRequestDTO event) {
-    EventEntity e = eventRepo.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
-    EventMapper.copyToEntityUpdate(event, e);
-    validateBusinessRules(e, eventId);
-    return EventMapper.toResponse(eventRepo.save(e));
+  public EventDTO updateEvent(String eventId, EventCreateRequestDTO event, int ifMatchVersion) {
+    EventEntity eventEntity = eventRepo.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
+    compareVersion(ifMatchVersion, eventEntity.getVersion());
+    EventMapper.copyToEntityUpdate(event, eventEntity);
+    validateBusinessRules(eventEntity, eventId);
+    return EventMapper.toResponse(eventRepo.saveAndFlush(eventEntity));
   }
 
   @Override
-  public void deleteEvent(String eventId) {
-    if (!eventRepo.existsById(eventId)) throw new NotFoundException("Event not found: " + eventId);
+  public void deleteEvent(String eventId, int ifMatchVersion) {
+    EventEntity eventEntity = eventRepo.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
+    compareVersion(ifMatchVersion, eventEntity.getVersion());
     eventRepo.deleteById(eventId);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public EventResponseDTO getEvent(String idEvent) {
+  public EventDTO getEvent(String idEvent) {
     return eventRepo.findById(idEvent)
         .map(EventMapper::toResponse)
         .orElseThrow(() -> new NotFoundException("Event not found: " + idEvent));
@@ -64,14 +68,14 @@ public class EventServiceImpl implements EventService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<EventResponseDTO> listEventsBetween(Instant from, Instant to, Pageable pageable) {
+  public Page<EventDTO> listEventsBetween(Instant from, Instant to, Pageable pageable) {
     return eventRepo.findAllByStartAtBetween(from, to, pageable)
         .map(EventMapper::toResponse);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public Page<EventResponseDTO> listEventsPast(Instant before, Pageable pageable) {
+  public Page<EventDTO> listEventsPast(Instant before, Pageable pageable) {
     return eventRepo.findAllByEndAtBefore(before, pageable)
         .map(EventMapper::toResponse);
   }
@@ -94,8 +98,8 @@ public class EventServiceImpl implements EventService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<EventResponseDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
-          EventType type, EventStatus status, EventVisibility visibility, Pageable pageable) {
+  public Page<EventDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
+                                     EventType type, EventStatus status, EventVisibility visibility, Pageable pageable) {
 
     Specification<EventEntity> spec = Specification.allOf(
             EventSpecifications.all(),

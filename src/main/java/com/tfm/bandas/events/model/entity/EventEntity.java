@@ -23,7 +23,8 @@ public class EventEntity {
   private String id; // UUID as String
 
   @Version
-  private int version;
+  @Column(name = "version")
+  private Integer version;
 
   @Column(nullable = false, length = 200)
   private String title;
@@ -62,4 +63,6 @@ public class EventEntity {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private Instant updatedAt;
+
+
 }

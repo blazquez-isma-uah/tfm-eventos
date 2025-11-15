@@ -2,7 +2,7 @@ package com.tfm.bandas.events.dto.mapper;
 
 import com.tfm.bandas.events.dto.CalendarEventItemDTO;
 import com.tfm.bandas.events.dto.EventCreateRequestDTO;
-import com.tfm.bandas.events.dto.EventResponseDTO;
+import com.tfm.bandas.events.dto.EventDTO;
 import com.tfm.bandas.events.exception.BadRequestException;
 import com.tfm.bandas.events.model.entity.EventEntity;
 import com.tfm.bandas.events.utils.EventStatus;
@@ -58,12 +58,12 @@ public class EventMapper {
     e.setEndAt(end);
   }
 
-  public static EventResponseDTO toResponse(EventEntity e) {
+  public static EventDTO toResponse(EventEntity e) {
     ZoneId zone = ZoneId.of(e.getTimeZone());
     String startLocal = e.getStartAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
     String endLocal   = e.getEndAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
 
-    return new EventResponseDTO(
+    return new EventDTO(
         e.getId(),
         e.getVersion(),
         e.getTitle(),

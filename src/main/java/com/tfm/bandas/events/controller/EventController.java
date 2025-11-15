@@ -2,12 +2,9 @@ package com.tfm.bandas.events.controller;
 
 import com.tfm.bandas.events.dto.CalendarEventItemDTO;
 import com.tfm.bandas.events.dto.EventCreateRequestDTO;
-import com.tfm.bandas.events.dto.EventResponseDTO;
+import com.tfm.bandas.events.dto.EventDTO;
 import com.tfm.bandas.events.service.EventService;
-import com.tfm.bandas.events.utils.EventStatus;
-import com.tfm.bandas.events.utils.EventType;
-import com.tfm.bandas.events.utils.EventVisibility;
-import com.tfm.bandas.events.utils.PaginatedResponse;
+import com.tfm.bandas.events.utils.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,50 +32,54 @@ public class EventController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
-  public ResponseEntity<EventResponseDTO> createEvent(@Valid @RequestBody EventCreateRequestDTO event) {
+  public ResponseEntity<EventDTO> createEvent(@Valid @RequestBody EventCreateRequestDTO event) {
     logger.info("Calling createEvent with arguments: {}", event);
-    EventResponseDTO response = eventService.createEvent(event);
+    EventDTO response = eventService.createEvent(event);
     logger.info("createEvent returning: {}", response);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    return EtagUtils.withEtag(ResponseEntity.status(HttpStatus.CREATED), response.version(), response);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/{eventId}")
-  public ResponseEntity<EventResponseDTO> updateEvent(@PathVariable String eventId, @Valid @RequestBody EventCreateRequestDTO event) {
-    logger.info("Calling updateEvent with eventId={}, event={}", eventId, event);
-    EventResponseDTO response = eventService.updateEvent(eventId, event);
+  public ResponseEntity<EventDTO> updateEvent(@PathVariable String eventId, @Valid @RequestBody EventCreateRequestDTO event,
+                                              @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
+    logger.info("Calling updateEvent with eventId={}, event={}, ifMatch={}", eventId, event, ifMatch);
+    int version = EtagUtils.parseIfMatchToVersion(ifMatch);
+    EventDTO response = eventService.updateEvent(eventId, event, version);
     logger.info("updateEvent returning: {}", response);
-    return ResponseEntity.ok(response);
+    return EtagUtils.withEtag(ResponseEntity.ok(), response.version(), response);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/{eventId}")
-  public ResponseEntity<Void> deleteEvent(@PathVariable String eventId) {
-    logger.info("Calling deleteEvent with idEvent={}", eventId);
-    eventService.deleteEvent(eventId);
+  public ResponseEntity<Void> deleteEvent(@PathVariable String eventId,
+                                          @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
+    logger.info("Calling deleteEvent with idEvent={}, ifMatch={}", eventId, ifMatch);
+    int version = EtagUtils.parseIfMatchToVersion(ifMatch);
+    eventService.deleteEvent(eventId, version);
     logger.info("deleteEvent Completed successfully");
     return ResponseEntity.noContent().build();
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
   @GetMapping("/{eventId}")
-  public ResponseEntity<EventResponseDTO> getEvent(@PathVariable String eventId) {
+  public ResponseEntity<EventDTO> getEvent(@PathVariable String eventId) {
     logger.info("Calling getEvent with idEvent={}", eventId);
-    EventResponseDTO response = eventService.getEvent(eventId);
+    EventDTO response = eventService.getEvent(eventId);
     logger.info("getEvent returning: {}", response);
-    return ResponseEntity.ok(response);
+    return EtagUtils.withEtag(ResponseEntity.ok(), response.version(), response);
   }
 
   // Listado por rango (UTC)
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
   @GetMapping
-  public ResponseEntity<PaginatedResponse<EventResponseDTO>> listBetweenEvents(
+  public ResponseEntity<PaginatedResponse<EventDTO>> listBetweenEvents(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
       @PageableDefault(size = 10) Pageable pageable
   ) {
     logger.info("Calling listBetweenEvents with from={}, to={}, pageable={}", from, to, pageable);
-    PaginatedResponse<EventResponseDTO> response = PaginatedResponse.from(eventService.listEventsBetween(from, to, pageable));
+    PaginatedResponse<EventDTO> response = PaginatedResponse.from(eventService.listEventsBetween(from, to, pageable));
     logger.info("listBetweenEvents returning: {}", response);
     return ResponseEntity.ok(response);
   }
@@ -85,13 +87,13 @@ public class EventController {
   // Pasados (por endAt)
   @PreAuthorize("hasAnyRole('ADMIN', 'MUSICIAN')")
   @GetMapping("/past")
-  public ResponseEntity<PaginatedResponse<EventResponseDTO>> listPastEvents(
+  public ResponseEntity<PaginatedResponse<EventDTO>> listPastEvents(
       @RequestParam(required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
       @PageableDefault(size = 10) Pageable pageable
   ) {
     logger.info("Calling listPastEvents with before={}, pageable={}", before, pageable);
-    PaginatedResponse<EventResponseDTO> response = PaginatedResponse.from(eventService.listEventsPast(before != null ? before : Instant.now(), pageable));
+    PaginatedResponse<EventDTO> response = PaginatedResponse.from(eventService.listEventsPast(before != null ? before : Instant.now(), pageable));
     logger.info("listPastEvents returning: {}", response);
     return ResponseEntity.ok(response);
   }
@@ -128,7 +130,7 @@ public class EventController {
 
   @PreAuthorize("hasAnyRole('ADMIN','MUSICIAN')")
   @GetMapping("/search")
-  public ResponseEntity<PaginatedResponse<EventResponseDTO>> searchEvents(
+  public ResponseEntity<PaginatedResponse<EventDTO>> searchEvents(
           // Texto libre en title/description/location
           @RequestParam(required = false, name = "q") String qText,
           // Filtros específicos
