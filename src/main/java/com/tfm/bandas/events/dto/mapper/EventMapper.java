@@ -7,26 +7,15 @@ import com.tfm.bandas.events.exception.BadRequestException;
 import com.tfm.bandas.events.model.entity.EventEntity;
 import com.tfm.bandas.events.utils.EventStatus;
 
-import java.time.*;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.UUID;
 
 public class EventMapper {
 
-  private static final DateTimeFormatter ISO_OFFSET = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-
-  // Validación + conversión LocalDateTime + zone -> Instant
-  private static Instant toInstant(LocalDateTime local, String zoneId) {
-    ZoneId zone;
-    try { zone = ZoneId.of(zoneId); }
-    catch (Exception ex) { throw new BadRequestException("Invalid timeZone: " + zoneId); }
-    return local.atZone(zone).toInstant();
-  }
-
   public static EventEntity toEntityNew(EventCreateRequestDTO req) {
-    Instant start = toInstant(req.localStart(), req.timeZone());
-    Instant end   = toInstant(req.localEnd(), req.timeZone());
-    if (!end.isAfter(start)) throw new BadRequestException("end must be after start");
+    if (!req.endAt().isAfter(req.startAt())) {
+      throw new BadRequestException("end must be after start");
+    }
 
     return EventEntity.builder()
         .id(UUID.randomUUID().toString())
@@ -36,16 +25,15 @@ public class EventMapper {
         .type(req.type())
         .status(req.status() == null ? EventStatus.SCHEDULED : req.status())
         .visibility(req.visibility())
-        .timeZone(req.timeZone())
-        .startAt(start)
-        .endAt(end)
+        .startAt(req.startAt())
+        .endAt(req.endAt())
         .build();
   }
 
   public static void copyToEntityUpdate(EventCreateRequestDTO req, EventEntity e) {
-    Instant start = toInstant(req.localStart(), req.timeZone());
-    Instant end   = toInstant(req.localEnd(), req.timeZone());
-    if (!end.isAfter(start)) throw new BadRequestException("end must be after start");
+    if (!req.endAt().isAfter(req.startAt())) {
+      throw new BadRequestException("end must be after start");
+    }
 
     e.setTitle(req.title());
     e.setDescription(req.description());
@@ -53,16 +41,11 @@ public class EventMapper {
     e.setType(req.type());
     e.setStatus(req.status());
     e.setVisibility(req.visibility());
-    e.setTimeZone(req.timeZone());
-    e.setStartAt(start);
-    e.setEndAt(end);
+    e.setStartAt(req.startAt());
+    e.setEndAt(req.endAt());
   }
 
   public static EventDTO toResponse(EventEntity e) {
-    ZoneId zone = ZoneId.of(e.getTimeZone());
-    String startLocal = e.getStartAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
-    String endLocal   = e.getEndAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
-
     return new EventDTO(
         e.getId(),
         e.getVersion(),
@@ -72,21 +55,21 @@ public class EventMapper {
         e.getType(),
         e.getStatus(),
         e.getVisibility(),
-        e.getTimeZone(),
         e.getStartAt(),
-        e.getEndAt(),
-        startLocal,
-        endLocal
+        e.getEndAt()
     );
   }
 
-  public static CalendarEventItemDTO toCalendarItem(EventEntity e, ZoneId tzOpt) {
-    ZoneId zone = (tzOpt != null) ? tzOpt : ZoneId.of(e.getTimeZone());
-    String start = e.getStartAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
-    String end   = e.getEndAt().atZone(zone).toOffsetDateTime().format(ISO_OFFSET);
+  public static CalendarEventItemDTO toCalendarItem(EventEntity e) {
     return new CalendarEventItemDTO(
-        e.getId(), e.getTitle(), start, end, false,
-        e.getType(), e.getStatus(), zone.getId(), e.getLocation()
+        e.getId(),
+        e.getTitle(),
+        e.getStartAt(),
+        e.getEndAt(),
+        false,
+        e.getType(),
+        e.getStatus(),
+        e.getLocation()
     );
   }
 }

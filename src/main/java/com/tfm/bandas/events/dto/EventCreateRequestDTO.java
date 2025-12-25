@@ -4,7 +4,7 @@ import com.tfm.bandas.events.utils.EventStatus;
 import com.tfm.bandas.events.utils.EventType;
 import com.tfm.bandas.events.utils.EventVisibility;
 import jakarta.validation.constraints.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record EventCreateRequestDTO(
         @NotBlank @Size(max = 200) String title,
@@ -14,7 +14,6 @@ public record EventCreateRequestDTO(
         EventStatus status, // opcional; si null => SCHEDULED
         @NotNull EventVisibility visibility,
 
-        @NotNull LocalDateTime localStart,
-        @NotNull LocalDateTime localEnd,
-        @NotBlank String timeZone
+        @NotNull Instant startAt,
+        @NotNull Instant endAt
 ) {}

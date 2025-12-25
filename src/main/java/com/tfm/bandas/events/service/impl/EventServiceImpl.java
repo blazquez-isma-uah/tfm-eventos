@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 
 import static com.tfm.bandas.events.utils.EtagUtils.compareVersion;
 
@@ -82,23 +81,21 @@ public class EventServiceImpl implements EventService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<CalendarEventItemDTO> calendarBetween(Instant from, Instant to, String tzOptional, Pageable pageable) {
-    ZoneId zone = (tzOptional == null || tzOptional.isBlank()) ? null : ZoneId.of(tzOptional);
+  public Page<CalendarEventItemDTO> calendarBetween(Instant from, Instant to, Pageable pageable) {
     return eventRepo.findAllByStartAtBetween(from, to, pageable)
-        .map(e -> EventMapper.toCalendarItem(e, zone));
+        .map(EventMapper::toCalendarItem);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public Page<CalendarEventItemDTO> calendarBetweenPublic(Instant from, Instant to, String tzOptional, Pageable pageable) {
-    ZoneId zone = (tzOptional == null || tzOptional.isBlank()) ? null : ZoneId.of(tzOptional);
+  public Page<CalendarEventItemDTO> calendarBetweenPublic(Instant from, Instant to, Pageable pageable) {
     return eventRepo.findAllByVisibilityAndStartAtBetween(EventVisibility.PUBLIC, from, to, pageable)
-            .map(e -> EventMapper.toCalendarItem(e, zone));
+            .map(EventMapper::toCalendarItem);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public Page<EventDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
+  public Page<EventDTO> searchEvents(String qText, String title, String description, String location,
                                      EventType type, EventStatus status, EventVisibility visibility, Pageable pageable) {
 
     Specification<EventEntity> spec = Specification.allOf(
@@ -107,7 +104,6 @@ public class EventServiceImpl implements EventService {
             EventSpecifications.titleContains(title),
             EventSpecifications.descriptionContains(description),
             EventSpecifications.locationContains(location),
-            EventSpecifications.timeZoneEquals(timeZone),
             EventSpecifications.typeEquals(type),
             EventSpecifications.statusEquals(status),
             EventSpecifications.visibilityEquals(visibility));

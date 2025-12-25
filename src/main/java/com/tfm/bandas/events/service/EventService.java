@@ -20,9 +20,9 @@ public interface EventService {
   Page<EventDTO> listEventsBetween(Instant from, Instant to, Pageable pageable);
   Page<EventDTO> listEventsPast(Instant before, Pageable pageable);
 
-  Page<CalendarEventItemDTO> calendarBetween(Instant from, Instant to, String tzOptional, Pageable pageable);
-  Page<CalendarEventItemDTO> calendarBetweenPublic(Instant from, Instant to, String tzOptional, Pageable pageable);
+  Page<CalendarEventItemDTO> calendarBetween(Instant from, Instant to, Pageable pageable);
+  Page<CalendarEventItemDTO> calendarBetweenPublic(Instant from, Instant to, Pageable pageable);
 
-  Page<EventDTO> searchEvents(String qText, String title, String description, String location, String timeZone,
+  Page<EventDTO> searchEvents(String qText, String title, String description, String location,
                               EventType type, EventStatus status, EventVisibility visibility, Pageable pageable);
 }

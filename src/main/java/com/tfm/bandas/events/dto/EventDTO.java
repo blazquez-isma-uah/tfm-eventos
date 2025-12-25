@@ -15,9 +15,6 @@ public record EventDTO(
     EventType type,
     EventStatus status,
     EventVisibility visibility,
-    String timeZone,
-    Instant startAt, // UTC
-    Instant endAt,   // UTC
-    String startLocal, // ISO con offset, calculado con timeZone
-    String endLocal
+    Instant startAt,
+    Instant endAt
 ) {}

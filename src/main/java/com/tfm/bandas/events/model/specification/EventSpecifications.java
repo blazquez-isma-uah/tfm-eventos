@@ -44,10 +44,6 @@ public class EventSpecifications {
         return (root, q, cb) -> cb.like(cb.lower(root.get("location")), like);
     }
 
-    public static Specification<EventEntity> timeZoneEquals(String timeZone) {
-        if (timeZone == null || timeZone.isBlank()) return null;
-        return (root, q, cb) -> cb.equal(root.get("timeZone"), timeZone);
-    }
 
     public static Specification<EventEntity> typeEquals(EventType type) {
         if (type == null) return null;

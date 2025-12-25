@@ -38,9 +38,6 @@ public class EventEntity {
   @Column(name = "end_at", nullable = false)
   private Instant endAt;
 
-  @Column(name = "time_zone", nullable = false, length = 50)
-  private String timeZone; // e.g. "Europe/Madrid"
-
   @Column(length = 255)
   private String location;
 
