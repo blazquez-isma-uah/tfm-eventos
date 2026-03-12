@@ -62,3 +62,8 @@ events:
     max-duration-hours: ${EVENTS_RULES_MAX_DURATION_HOURS:8}
     allow-overlap-same-location: ${EVENTS_RULES_ALLOW_OVERLAP_SAME_LOCATION:false}
     allow-create-in-past: ${EVENTS_RULES_ALLOW_CREATE_IN_PAST:true}
+
+surveys:
+  service:
+    uri: ${SURVEYS_SERVICE_URI}
+    deleteSurveysByEventIdPath: ${SURVEYS_SERVICE_DELETE_BY_EVENT_ID_PATH}

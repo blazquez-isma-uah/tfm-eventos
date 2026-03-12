@@ -1,5 +1,6 @@
 package com.tfm.bandas.events.service.impl;
 
+import com.tfm.bandas.events.client.SurveysClient;
 import com.tfm.bandas.events.config.EventRulesProperties;
 import com.tfm.bandas.events.dto.CalendarEventItemDTO;
 import com.tfm.bandas.events.dto.EventCreateRequestDTO;
@@ -15,6 +16,7 @@ import com.tfm.bandas.events.utils.EventStatus;
 import com.tfm.bandas.events.utils.EventType;
 import com.tfm.bandas.events.utils.EventVisibility;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,10 +31,12 @@ import static com.tfm.bandas.events.utils.EtagUtils.compareVersion;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepo;
   private final EventRulesProperties rules;
+  private final SurveysClient surveysClient;
 
   @Override
   public EventDTO createEvent(EventCreateRequestDTO event) {
@@ -52,9 +56,23 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public void deleteEvent(String eventId, int ifMatchVersion) {
-    EventEntity eventEntity = eventRepo.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
+    EventEntity eventEntity = eventRepo.findById(eventId)
+            .orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
     compareVersion(ifMatchVersion, eventEntity.getVersion());
     eventRepo.deleteById(eventId);
+
+    /*
+     * Notificación a MS Surveys para eliminar las encuestas asociadas
+     * El borrado del evento en esta BD es irreversible y no se revierte si Surveys falla.
+     * Un fallo puntual en esta notificación produce encuestas huérfanas, no un estado de datos corrupto.
+     */
+    try {
+      surveysClient.deleteSurveysByEventId(eventId);
+    } catch (Exception e) {
+      log.warn("Falló la notificación de borrado de encuestas para el evento {}. " +
+               "El evento se ha borrado correctamente, pero las encuestas asociadas pueden quedar como huérfanas. Cause: {}",
+               eventId, e.getMessage());
+    }
   }
 
   @Override

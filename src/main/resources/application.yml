@@ -61,3 +61,8 @@ events:
     max-duration-hours: 240 # 10 days
     allow-overlap-same-location: true
     allow-create-in-past: true
+
+surveys:
+  service:
+    uri: http://localhost:8084
+    deleteSurveysByEventIdPath: /api/surveys/event/{eventId}
