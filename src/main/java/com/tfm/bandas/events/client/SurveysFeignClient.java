@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
         url = "${surveys.service.uri}",
         configuration = FeignSecurityConfig.class
 )
-public interface SurveysClient {
+public interface SurveysFeignClient {
     /**
      * Solicita a MS Surveys que elimine todas las encuestas asociadas a un evento.
      * Invocado únicamente desde deleteEvent como parte de la cascada de borrado.

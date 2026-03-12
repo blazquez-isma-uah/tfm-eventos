@@ -1,6 +1,6 @@
 package com.tfm.bandas.events.service.impl;
 
-import com.tfm.bandas.events.client.SurveysClient;
+import com.tfm.bandas.events.client.SurveysFeignClient;
 import com.tfm.bandas.events.config.EventRulesProperties;
 import com.tfm.bandas.events.dto.CalendarEventItemDTO;
 import com.tfm.bandas.events.dto.EventCreateRequestDTO;
@@ -36,7 +36,7 @@ public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepo;
   private final EventRulesProperties rules;
-  private final SurveysClient surveysClient;
+  private final SurveysFeignClient surveysFeignClient;
 
   @Override
   public EventDTO createEvent(EventCreateRequestDTO event) {
@@ -67,7 +67,7 @@ public class EventServiceImpl implements EventService {
      * Un fallo puntual en esta notificación produce encuestas huérfanas, no un estado de datos corrupto.
      */
     try {
-      surveysClient.deleteSurveysByEventId(eventId);
+      surveysFeignClient.deleteSurveysByEventId(eventId);
     } catch (Exception e) {
       log.warn("Falló la notificación de borrado de encuestas para el evento {}. " +
                "El evento se ha borrado correctamente, pero las encuestas asociadas pueden quedar como huérfanas. Cause: {}",
