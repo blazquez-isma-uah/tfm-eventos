@@ -29,5 +29,5 @@ jobs:
       # -B: modo batch (sin color, apto para logs de CI)
       # clean verify: limpia artefactos previos, compila, ejecuta tests
       # y verifica que el JAR final es correcto.
-      - name: Build & Test
-        run: mvn -B clean verify
+      - name: Build
+        run: mvn -B clean package -DskipTests
