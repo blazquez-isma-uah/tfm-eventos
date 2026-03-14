@@ -46,8 +46,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.PUT,  "/api/events/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.DELETE,"/api/events/**").hasRole("ADMIN")
 
-                    // Endpoint público de calendario (lo añadimos en D)
-                    .requestMatchers(HttpMethod.GET, "/api/public/events/calendar").permitAll()
+                    // Endpoint público de calendario
+                    .requestMatchers(HttpMethod.GET, "/api/events/public/calendar").permitAll()
 
                     .anyRequest().authenticated()
             )
@@ -84,4 +84,3 @@ public class SecurityConfig {
     return source;
   }
 }
-

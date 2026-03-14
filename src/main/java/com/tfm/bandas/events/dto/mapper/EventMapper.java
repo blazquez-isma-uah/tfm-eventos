@@ -7,7 +7,6 @@ import com.tfm.bandas.events.exception.BadRequestException;
 import com.tfm.bandas.events.model.entity.EventEntity;
 import com.tfm.bandas.events.utils.EventStatus;
 
-import java.time.Instant;
 import java.util.UUID;
 
 public class EventMapper {
@@ -39,7 +38,7 @@ public class EventMapper {
     e.setDescription(req.description());
     e.setLocation(req.location());
     e.setType(req.type());
-    e.setStatus(req.status());
+    e.setStatus(req.status() == null ? e.getStatus() : req.status());
     e.setVisibility(req.visibility());
     e.setStartAt(req.startAt());
     e.setEndAt(req.endAt());

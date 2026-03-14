@@ -43,7 +43,7 @@ public class EventController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{eventId}")
     public ResponseEntity<EventDTO> updateEvent(@PathVariable String eventId, @Valid @RequestBody EventCreateRequestDTO event,
-                                                @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
+                                                @RequestHeader(name = HttpHeaders.IF_MATCH, required = true) String ifMatch) {
         logger.info("Calling updateEvent with eventId={}, event={}, ifMatch={}", eventId, event, ifMatch);
         int version = EtagUtils.parseIfMatchToVersion(ifMatch);
         EventDTO response = eventService.updateEvent(eventId, event, version);
@@ -54,7 +54,7 @@ public class EventController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{eventId}")
     public ResponseEntity<Void> deleteEvent(@PathVariable String eventId,
-                                            @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
+                                            @RequestHeader(name = HttpHeaders.IF_MATCH, required = true) String ifMatch) {
         logger.info("Calling deleteEvent with idEvent={}, ifMatch={}", eventId, ifMatch);
         int version = EtagUtils.parseIfMatchToVersion(ifMatch);
         eventService.deleteEvent(eventId, version);
