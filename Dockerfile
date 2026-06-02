@@ -29,7 +29,7 @@ COPY --from=build /app/target/*.jar /app/app.jar
 # Opciones JVM saneadas para contenedores
 # Ajusta el uso de memoria y maneja errores de OOM
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -Duser.timezone=UTC"
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=docker
 
 # Healthcheck (necesitas spring-boot-starter-actuator en el pom)
 # Comprueba que la app responde en /actuator/health y está UP cada 15s
