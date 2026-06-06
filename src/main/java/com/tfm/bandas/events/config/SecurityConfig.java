@@ -9,9 +9,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
-
-import static com.tfm.bandas.events.utils.Constants.*;
 
 @Configuration
 @EnableMethodSecurity
@@ -31,6 +30,7 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     var conv = new JwtAuthenticationConverter();
     conv.setJwtGrantedAuthoritiesConverter(jwtAuthConverter);
+    var matcher = PathPatternRequestMatcher.withDefaults();
 
     http.csrf(AbstractHttpConfigurer::disable);
 
@@ -41,12 +41,15 @@ public class SecurityConfig {
     }
 
     http.authorizeHttpRequests(auth -> auth
-                    .requestMatchers(PATTERNS_PERMITED).permitAll()
-                    .requestMatchers(HttpMethod.GET, PATTERNS_PUBLIC).permitAll()
-                    .requestMatchers(HttpMethod.GET, PATTERNS_AUTHENTICATED).hasAnyRole("ADMIN", "MUSICIAN")
-                    .requestMatchers(HttpMethod.POST, PATTERNS_AUTHENTICATED).hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, PATTERNS_AUTHENTICATED).hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, PATTERNS_AUTHENTICATED).hasRole("ADMIN")
+                    .requestMatchers(matcher.matcher("/actuator/health")).permitAll()
+                    .requestMatchers(matcher.matcher("/swagger-ui.html")).permitAll()
+                    .requestMatchers(matcher.matcher("/swagger-ui/**")).permitAll()
+                    .requestMatchers(matcher.matcher("/v3/api-docs/**")).permitAll()
+                    .requestMatchers(matcher.matcher(HttpMethod.GET, "/api/events/public/calendar")).permitAll()
+                    .requestMatchers(matcher.matcher(HttpMethod.GET, "/api/events/**")).hasAnyRole("ADMIN", "MUSICIAN")
+                    .requestMatchers(matcher.matcher(HttpMethod.POST, "/api/events/**")).hasRole("ADMIN")
+                    .requestMatchers(matcher.matcher(HttpMethod.PUT, "/api/events/**")).hasRole("ADMIN")
+                    .requestMatchers(matcher.matcher(HttpMethod.DELETE, "/api/events/**")).hasRole("ADMIN")
                     .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(conv)));
