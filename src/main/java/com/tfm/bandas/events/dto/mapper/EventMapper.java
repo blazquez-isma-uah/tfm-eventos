@@ -13,7 +13,7 @@ public class EventMapper {
 
   public static EventEntity toEntityNew(EventCreateRequestDTO req) {
     if (!req.endAt().isAfter(req.startAt())) {
-      throw new BadRequestException("end must be after start");
+      throw new BadRequestException("La fecha de fin debe ser estrictamente posterior a la fecha de inicio.");
     }
 
     return EventEntity.builder()
@@ -31,7 +31,7 @@ public class EventMapper {
 
   public static void copyToEntityUpdate(EventCreateRequestDTO req, EventEntity e) {
     if (!req.endAt().isAfter(req.startAt())) {
-      throw new BadRequestException("end must be after start");
+      throw new BadRequestException("La fecha de fin debe ser estrictamente posterior a la fecha de inicio.");
     }
 
     e.setTitle(req.title());
