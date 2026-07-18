@@ -7,6 +7,7 @@ import com.tfm.bandas.events.dto.EventCreateRequestDTO;
 import com.tfm.bandas.events.dto.EventDTO;
 import com.tfm.bandas.events.dto.mapper.EventMapper;
 import com.tfm.bandas.events.exception.BadRequestException;
+import com.tfm.bandas.events.exception.ConflictException;
 import com.tfm.bandas.events.exception.NotFoundException;
 import com.tfm.bandas.events.model.entity.EventEntity;
 import com.tfm.bandas.events.model.repository.EventRepository;
@@ -47,7 +48,7 @@ public class EventServiceImpl implements EventService {
 
   @Override
   public EventDTO updateEvent(String eventId, EventCreateRequestDTO event, int ifMatchVersion) {
-    EventEntity eventEntity = eventRepo.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
+    EventEntity eventEntity = eventRepo.findById(eventId).orElseThrow(() -> new NotFoundException("No se encontró ningún evento con el ID " + eventId));
     compareVersion(ifMatchVersion, eventEntity.getVersion());
     EventMapper.copyToEntityUpdate(event, eventEntity);
     validateBusinessRules(eventEntity, eventId);
@@ -57,7 +58,7 @@ public class EventServiceImpl implements EventService {
   @Override
   public void deleteEvent(String eventId, int ifMatchVersion) {
     EventEntity eventEntity = eventRepo.findById(eventId)
-            .orElseThrow(() -> new NotFoundException("Event not found: " + eventId));
+            .orElseThrow(() -> new NotFoundException("No se encontró ningún evento con el ID " + eventId));
     compareVersion(ifMatchVersion, eventEntity.getVersion());
     eventRepo.deleteById(eventId);
 
@@ -80,7 +81,7 @@ public class EventServiceImpl implements EventService {
   public EventDTO getEvent(String idEvent) {
     return eventRepo.findById(idEvent)
         .map(EventMapper::toResponse)
-        .orElseThrow(() -> new NotFoundException("Event not found: " + idEvent));
+        .orElseThrow(() -> new NotFoundException("No se encontró ningún evento con el ID " + idEvent));
   }
 
   @Override
@@ -133,21 +134,21 @@ public class EventServiceImpl implements EventService {
   private void validateBusinessRules(EventEntity eventEntity, String excludeIdForUpdate) {
     // start < end
     if (!eventEntity.getEndAt().isAfter(eventEntity.getStartAt())) {
-      throw new BadRequestException("end must be strictly after start");
+      throw new BadRequestException("La fecha de fin debe ser estrictamente posterior a la fecha de inicio.");
     }
 
     // Duraciones mínimas/máximas
     long minutes = Duration.between(eventEntity.getStartAt(), eventEntity.getEndAt()).toMinutes();
     if (minutes < rules.minDurationMinutes()) {
-      throw new BadRequestException("duration too short: min " + rules.minDurationMinutes() + " minutes");
+      throw new BadRequestException("La duración del evento es demasiado corta: la duración mínima permitida es de " + rules.minDurationMinutes() + " minutos.");
     }
     if (minutes > rules.maxDurationHours() * 60L) {
-      throw new BadRequestException("duration too long: max " + rules.maxDurationHours() + " hours");
+      throw new BadRequestException("La duración del evento es demasiado larga: la duración máxima permitida es de " + rules.maxDurationHours() + " horas.");
     }
 
     // Crear en pasado
     if (!rules.allowCreateInPast() && eventEntity.getStartAt().isBefore(Instant.now())) {
-      throw new BadRequestException("creating events in the past is disabled by policy");
+      throw new BadRequestException("La política actual no permite crear eventos con fecha de inicio en el pasado.");
     }
 
     // Solapes por ubicación (si hay ubicación y no se permite solape)
@@ -155,7 +156,7 @@ public class EventServiceImpl implements EventService {
       long conflicts = eventRepo.countConflictsAtLocation(
               eventEntity.getLocation(), eventEntity.getStartAt(), eventEntity.getEndAt(), excludeIdForUpdate);
       if (conflicts > 0) {
-        throw new BadRequestException("time slot overlaps with another event at the same location");
+        throw new ConflictException("Ya existe otro evento en la ubicación '" + eventEntity.getLocation() + "' que se solapa con el horario indicado.", "EVENT_LOCATION_CONFLICT");
       }
     }
   }
